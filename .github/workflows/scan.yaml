@@ -15,6 +15,7 @@ on:
       label:
         required: true
         type: string
+
     secrets:
       FCITK:
         required: true
@@ -22,7 +23,7 @@ on:
         required: true
 
 env:
-  PYTHONPATH: ${{ github.workspace }}/src
+  PYTHONPATH: ${{ github.workspace }}/fcicd/src
 
 jobs:
   scan:
@@ -35,9 +36,21 @@ jobs:
         password: ${{ secrets.FCITK }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout caller repository
+        uses: actions/checkout@v4
+        with:
+          path: caller
+
+      - name: Checkout fcicd repository
+        uses: actions/checkout@v4
+        with:
+          repository: quantum-rlk/fcicd
+          ref: main
+          token: ${{ secrets.FCITK }}
+          path: fcicd
 
       - name: Run scanner
+        working-directory: fcicd
         run: |
           python3.14 scripts/xcicd-bscanner.py \
             "${{ inputs.project }}" \
@@ -58,9 +71,21 @@ jobs:
         password: ${{ secrets.FCITK }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout caller repository
+        uses: actions/checkout@v4
+        with:
+          path: caller
+
+      - name: Checkout fcicd repository
+        uses: actions/checkout@v4
+        with:
+          repository: quantum-rlk/fcicd
+          ref: main
+          token: ${{ secrets.FCITK }}
+          path: fcicd
 
       - name: Run unit tests
+        working-directory: fcicd
         run: |
           ls -l
           echo "Running tests ..."
