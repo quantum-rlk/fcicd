@@ -2,9 +2,18 @@ name: CI
 
 on:
   push:
+    branches:
+      - "**"
   pull_request:
 
 jobs:
-  scan:
+  branch-scan:
     uses: ./.github/workflows/scan.yaml
-    secrets: inherit
+    with:
+      project: FCI
+      repository: ${{ github.repository }}
+      branch: ${{ github.ref_name }}
+      label: ${{ github.event.head_commit.message }}
+    secrets:
+      FCITK: ${{ secrets.FCITK }}
+      FCI_WEBHOOK_URL: ${{ secrets.FCI_WEBHOOK_URL }}

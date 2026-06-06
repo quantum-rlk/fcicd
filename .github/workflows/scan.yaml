@@ -2,14 +2,27 @@ name: branch scanner
 
 on:
   workflow_call:
+    inputs:
+      project:
+        required: true
+        type: string
+      repository:
+        required: true
+        type: string
+      branch:
+        required: true
+        type: string
+      label:
+        required: true
+        type: string
     secrets:
       FCITK:
         required: true
       FCI_WEBHOOK_URL:
-        required: false
+        required: true
 
 env:
-  PYTHONPATH: ${{ github.workspace }}/src 
+  PYTHONPATH: ${{ github.workspace }}/src
 
 jobs:
   scan:
@@ -21,20 +34,16 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.FCITK }}
 
-    env:
-      FASTCITK: ${{ secrets.FCITK }}
-
     steps:
       - uses: actions/checkout@v4
 
       - name: Run scanner
-        working-directory: scripts
         run: |
-          python3.14 xcicd-bscanner.py \
-            FCI \
-            "${{ github.repository }}" \
-            "${{ github.ref_name }}" \
-            "${{ github.event.head_commit.message }}"
+          python3.14 scripts/xcicd-bscanner.py \
+            "${{ inputs.project }}" \
+            "${{ inputs.repository }}" \
+            "${{ inputs.branch }}" \
+            "${{ inputs.label }}"
 
   verify:
     needs: scan
