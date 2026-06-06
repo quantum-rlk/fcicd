@@ -1,0 +1,71 @@
+name: branch scanner
+
+on:
+  workflow_call:
+    secrets:
+      FASTCITK:
+        required: true
+      IFASTCI:
+        required: true
+      FASTCI_WEBHOOK_URL:
+        required: false
+
+env:
+  PYTHONPATH: src
+
+xslimci-container: &slimci-container
+  image: ghcr.io/quantum-rlk/islimci:1.0
+  credentials:
+    username: ${{ github.actor }}
+    password: ${{ secrets.FASTCITK }}
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    container: *slimci-container
+
+    env:
+      FASTCITK: ${{ secrets.FASTCITK }}
+      IFASTCI: ${{ secrets.IFASTCI }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run scanner
+        working-directory: scripts 
+        run: |
+          python3.14 xcicd-bscanner.py \
+            FCI \
+            "${{ github.repository }}" \
+            "${{ github.ref }}" \
+            "${{ github.event.head_commit.message }}"
+
+  verify:
+    needs: scan
+    if: ${{ needs.scan.result == 'success' }}
+
+    runs-on: ubuntu-latest
+    container: *slimci-container
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run unit tests 
+        run: |
+          ls -l
+          echo "Running tests ..."
+
+  notify-failure:
+    needs:
+      - scan
+      - verify 
+
+    if: ${{ always() && contains(needs.*.result, 'failure') }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Notify Slack
+        uses: quantum-rlk/fastci/.github/actions/slack-failure@main 
+        with:
+          webhook: ${{ secrets.FASTCI_WEBHOOK_URL }}
