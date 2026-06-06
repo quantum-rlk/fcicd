@@ -1,0 +1,10 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  scan:
+    uses: ./.github/workflows/scan.yaml
+    secrets: inherit
