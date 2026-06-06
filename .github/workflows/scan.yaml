@@ -3,15 +3,13 @@ name: branch scanner
 on:
   workflow_call:
     secrets:
-      FASTCITK:
+      FCITK:
         required: true
-      IFASTCI:
-        required: true
-      FASTCI_WEBHOOK_URL:
+      FCI_WEBHOOK_URL:
         required: false
 
 env:
-  PYTHONPATH: src
+  PYTHONPATH: ${{ github.workspace }}/src 
 
 jobs:
   scan:
@@ -35,7 +33,7 @@ jobs:
           python3.14 xcicd-bscanner.py \
             FCI \
             "${{ github.repository }}" \
-            "${{ github.ref }}" \
+            "${{ github.ref_name }}" \
             "${{ github.event.head_commit.message }}"
 
   verify:
