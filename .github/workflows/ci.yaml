@@ -4,16 +4,16 @@ on:
   push:
     branches:
       - "**"
-  pull_request:
+  #pull_request:
 
 jobs:
   branch-scan:
     uses: ./.github/workflows/scan.yaml
     with:
-      project: FCI
+      project: XCI
       repository: ${{ github.repository }}
       branch: ${{ github.ref_name }}
       label: ${{ github.event.head_commit.message }}
     secrets:
-      FCITK: ${{ secrets.FCITK }}
-      FCI_WEBHOOK_URL: ${{ secrets.FCI_WEBHOOK_URL }}
+      CITK: ${{ secrets.XCITK }}
+      CI_WEBHOOK_URL: ${{ secrets.XCI_WEBHOOK_URL }}

@@ -17,23 +17,23 @@ on:
         type: string
 
     secrets:
-      FCITK:
+      CITK:
         required: true
-      FCI_WEBHOOK_URL:
+      CI_WEBHOOK_URL:
         required: true
 
 env:
-  PYTHONPATH: ${{ github.workspace }}/fcicd/src
+  PYTHONPATH: ${{ github.workspace }}/xcicd/src
 
 jobs:
   scan:
     runs-on: ubuntu-latest
 
     container:
-      image: ghcr.io/quantum-rlk/islimci:1.0
+      image: ghcr.io/variton/ici:1.0
       credentials:
         username: ${{ github.actor }}
-        password: ${{ secrets.FCITK }}
+        password: ${{ secrets.CITK }}
 
     steps:
       - name: Checkout caller repository
@@ -41,16 +41,16 @@ jobs:
         with:
           path: caller
 
-      - name: Checkout fcicd repository
+      - name: Checkout xcicd repository
         uses: actions/checkout@v4
         with:
-          repository: quantum-rlk/fcicd
+          repository: variton/xcicd
           ref: main
-          token: ${{ secrets.FCITK }}
-          path: fcicd
+          token: ${{ secrets.CITK }}
+          path: xcicd
 
       - name: Run scanner
-        working-directory: fcicd
+        working-directory: xcicd
         run: |
           python3.14 scripts/xcicd-bscanner.py \
             "${{ inputs.project }}" \
@@ -65,10 +65,10 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: ghcr.io/quantum-rlk/islimci:1.0
+      image: ghcr.io/variton/ici:1.0
       credentials:
         username: ${{ github.actor }}
-        password: ${{ secrets.FCITK }}
+        password: ${{ secrets.CITK }}
 
     steps:
       - name: Checkout caller repository
@@ -76,19 +76,18 @@ jobs:
         with:
           path: caller
 
-      - name: Checkout fcicd repository
+      - name: Checkout xcicd repository
         uses: actions/checkout@v4
         with:
-          repository: quantum-rlk/fcicd
+          repository: variton/xcicd
           ref: main
-          token: ${{ secrets.FCITK }}
-          path: fcicd
+          token: ${{ secrets.CITK }}
+          path: xcicd
 
       - name: Run unit tests
-        working-directory: fcicd
+        working-directory: xcicd
         run: |
-          ls -l
-          echo "Running tests ..."
+          pytest
 
   notify-failure:
     needs:
@@ -101,6 +100,6 @@ jobs:
 
     steps:
       - name: Notify Slack
-        uses: quantum-rlk/fastci/.github/actions/slack-failure@main
+        uses: variton/xcicd/.github/actions/slack-failure@main
         with:
-          webhook: ${{ secrets.FCI_WEBHOOK_URL }}
+          webhook: ${{ secrets.CI_WEBHOOK_URL }}
